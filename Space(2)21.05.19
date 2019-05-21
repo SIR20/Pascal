@@ -1,0 +1,82 @@
+{$apptype windows}
+{$resource Missile.png}
+{$resource метеорит.png}
+{$resource звездное небо(фон).jpg}
+uses ABCObjects, GraphABC, System.Drawing;
+
+var
+  r, v, f: PictureABC;
+  speed, v_rs, pop, vTop, kol_vo, r_randx: integer;
+
+function GetPicture(name: string): Picture;
+begin
+  var im := new Bitmap(System.Drawing.Image.FromStream(GetResourceStream(name)));
+  result := new Picture(im.Width, im.Height);
+  var r := new System.Drawing.Rectangle(0, 0, im.Width, im.Height);
+  result.CopyRect(r, im, r);
+end;
+
+procedure KeyDown(Key: integer);
+begin
+  case Key of
+    VK_Left: if r.Left > speed then r.Left := r.Left - speed;  
+    
+    VK_Right: if r.Left + r.Width + speed < windowwidth then r.Left := r.Left + speed;
+    VK_Escape: exit;
+  end;
+  
+end;
+
+procedure v_n(var g: PictureABC);
+var
+  v_nx, v_ny: integer;
+begin
+  v_nx := random(340);
+  repeat
+    v_ny := random(100);
+  until v_ny > 20;
+  g := PictureABC.Create(v_nx, v_ny, GetPicture('метеорит.png'));
+  sleep(20);
+end;
+
+procedure r_rs(var g: PictureABC);
+begin
+  g := PictureABC.Create(170, 300, GetPicture('Missile.png'));
+  g.width := g.width div 10;
+  g.height := g.height div 10;
+end;
+
+begin
+  setwindowsize(400, 400);
+  f := PictureABC.Create(0, 0, GetPicture('звездное небо(фон).jpg'));
+  r_rs(r);
+  v_n(v);
+  speed := 14;
+  v_rs := 2;
+  OnKeyDown := KeyDown;
+  vTop := v.Top;
+  pop := 4;
+  textout(325, 0, $' попыток: {pop}  ');
+  repeat
+    window.Caption := $'Игра : "Space" Вы увернулись от {kol_vo} метериотов';
+    repeat
+      sleep(10);
+      v.Top := v.Top + v_rs;
+      if v.Intersect(r)
+      then begin
+        r.Destroy;
+        v.Destroy;
+        dec(pop);
+        textout(330, 0, $'попыток: {pop}');
+        r_rs(r);
+        v_n(v);
+      end;
+    until (400 <= v.Top) or (pop = 0);
+    v.Destroy;
+    v_n(v);
+    inc(kol_vo);
+  until pop = 0;
+  v.Destroy;
+  r.Destroy;
+  textout(170, 170, $'Ваш счет: {kol_vo-pop-1} ');
+end.
